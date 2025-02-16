@@ -201,7 +201,6 @@ class KPOTrainer(Trainer):
         Returns:
             A dictionary containing the concatenated inputs under the key 'concatenated_input_ids'.
         """
-        # 把 chosen 和 rejected response 拼接起来
         #print('[concatenated_inputs]batch = ', batch)
         rejected_max_len = max([batch[key].shape[1] for key in batch if key.startswith("rejected") and key.endswith("_input_ids")])
         max_length = max(batch["chosen_input_ids"].shape[1], rejected_max_len)
