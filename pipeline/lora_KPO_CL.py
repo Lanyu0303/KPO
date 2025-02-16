@@ -56,11 +56,9 @@ def train(
         columns = list(examples.keys())
         for i in range(len(examples[columns[0]])):
             prompt = examples['original_prompt'][i]
-            #prompt = tokenizer.apply_chat_template([{"role":'user', 'content':prompt}], tokenize = False, add_generation_prompt=True) # 要测试一下是否用 
             chosen = examples['correct_answer'][i]
             sample_negs = examples['rejectList'][i]
             select_k = examples['logits_k'][i]
-            #select_k = random.randint(1, neg_num)
             dic["prompt"].append(prompt)
             dic["chosen"].append(chosen)
             dic['select_k'].append(select_k)
@@ -86,18 +84,13 @@ def train(
 
     base_model = LlamaForCausalLM.from_pretrained(model_name, 
                                                 device_map=device_map, 
-                                                #torch_dtype=torch.float16
-                                                # load_in_8bit=True,
-                                                #torch_dtype=torch.bfloat16,
                                                 quantization_config=bnb_config
                                                 )
     base_model.enable_input_require_grads()
     base_model.config.use_cache = False
     base_model = prepare_model_for_kbit_training(base_model)
     base_model = PeftModel.from_pretrained(base_model, resume_from_checkpoint, is_trainable=True)
-    # print_trainable_parameters(base_model)
     base_model.print_trainable_parameters()
-    #print("base_model = ", base_model)
 
     model_ref = LlamaForCausalLM.from_pretrained(model_name,
                                                 device_map=device_map, 
@@ -108,8 +101,6 @@ def train(
                                                 )
     reference_model = PeftModel.from_pretrained(model_ref, resume_from_checkpoint)
     reference_model.print_trainable_parameters()
-    #model_ref.eval()
-    #model_ref.print_trainable_parameters()
 
 
     
@@ -147,7 +138,6 @@ def train(
         args=training_args,
         beta=beta,
         train_dataset=train_data,
-        #eval_dataset=val_data,
         tokenizer=tokenizer,
         max_prompt_length=cutoff_len,
         max_length=cutoff_len,
